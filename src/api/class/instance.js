@@ -42,9 +42,8 @@ class WhatsAppInstance {
     axiosInstance = axios.create({
         baseURL: config.webhookUrl,
     })
-
-    constructor(key, allowWebhook, webhook) {
-        this.key = key ? key : uuidv4()
+    
+    updateHook(allowWebhook, webhook) {
         this.instance.customWebhook = this.webhook ? this.webhook : webhook
         this.allowWebhook = config.webhookEnabled
             ? config.webhookEnabled
@@ -56,6 +55,11 @@ class WhatsAppInstance {
                 baseURL: webhook,
             })
         }
+    }
+
+    constructor(key, allowWebhook, webhook) {
+        this.key = key ? key : uuidv4()
+        this.updateHook(allowWebhook, webhook);
     }
 
     async SendWebhook(type, body, key) {
@@ -299,9 +303,11 @@ class WhatsAppInstance {
                 if (
                     ['all', 'messages', 'messages.upsert'].some((e) =>
                         config.webhookAllowedEvents.includes(e)
-                    )
-                )
+                    ) && !webhookData?.key?.fromMe
+                ) {
+                    console.log("message", webhookData)
                     await this.SendWebhook('message', webhookData, this.key)
+                }
             })
         })
 
