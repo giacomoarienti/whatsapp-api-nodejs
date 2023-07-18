@@ -5,23 +5,29 @@ const config = require('../../config/config')
 const { Session } = require('../class/session')
 
 exports.init = async (req, res) => {
-    const key = req.query.key
+    let key = req.query.key
     const webhook = !req.query.webhook ? false : req.query.webhook
     const webhookUrl = !req.query.webhookUrl ? null : req.query.webhookUrl
     const appUrl = config.appUrl || req.protocol + '://' + req.headers.host
-    const instance = new WhatsAppInstance(key, webhook, webhookUrl)
-    const data = await instance.init()
-    WhatsAppInstances[data.key] = instance
+    
+    if(key && WhatsAppInstances[key]) {
+        WhatsAppInstances[key].updateHook(webhook, webhookUrl);
+    } else {
+        const instance = new WhatsAppInstance(key, webhook, webhookUrl)
+        key = (await instance.init()).key;
+        WhatsAppInstances[key] = instance;
+    }
+    
     res.json({
         error: false,
         message: 'Initializing successfully',
-        key: data.key,
+        key: key,
         webhook: {
             enabled: webhook,
             webhookUrl: webhookUrl,
         },
         qrcode: {
-            url: appUrl + '/instance/qr?key=' + data.key,
+            url: appUrl + '/instance/qr?key=' + key,
         },
         browser: config.browser,
     })
