@@ -12,6 +12,7 @@ exports.init = async (req, res) => {
     
     if(key && WhatsAppInstances[key]) {
         WhatsAppInstances[key].updateHook(webhook, webhookUrl);
+        await WhatsAppInstances[key].init();
     } else {
         const instance = new WhatsAppInstance(key, webhook, webhookUrl)
         key = (await instance.init()).key;

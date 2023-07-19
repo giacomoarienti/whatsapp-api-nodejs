@@ -74,13 +74,15 @@ class WhatsAppInstance {
     }
 
     async init() {
-        this.collection = mongoClient.db('whatsapp-api').collection(this.key)
-        const { state, saveCreds } = await useMongoDBAuthState(this.collection)
-        this.authState = { state: state, saveCreds: saveCreds }
-        this.socketConfig.auth = this.authState.state
-        this.socketConfig.browser = Object.values(config.browser)
-        this.instance.sock = makeWASocket(this.socketConfig)
-        this.setHandler()
+        if(!this.instance.online && this.instance.qrRetry >= config.instance.maxRetryQr) {
+            this.collection = mongoClient.db('whatsapp-api').collection(this.key)
+            const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+            this.authState = { state: state, saveCreds: saveCreds }
+            this.socketConfig.auth = this.authState.state
+            this.socketConfig.browser = Object.values(config.browser)
+            this.instance.sock = makeWASocket(this.socketConfig)
+            this.setHandler()
+        }
         return this
     }
 
