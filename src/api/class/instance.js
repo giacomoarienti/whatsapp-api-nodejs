@@ -75,7 +75,8 @@ class WhatsAppInstance {
 
     async init() {
         if (!this.instance.online && !this.instance.sock) {
-            console.log('init')
+            logger.info('init')
+            this.qrRetry = 0
             this.collection = mongoClient.db('whatsapp-api').collection(this.key)
             const { state, saveCreds } = await useMongoDBAuthState(this.collection)
             this.authState = { state: state, saveCreds: saveCreds }
@@ -85,6 +86,19 @@ class WhatsAppInstance {
             this.setHandler()
         }
         return this
+    }
+
+    resetConnection() {
+        if(this.instance.sock) {
+            // close WebSocket connection
+            this.instance.sock.ws.close()
+            // remove all events
+            this.instance.sock.ev.removeAllListeners()
+            this.instance.sock = null;
+        }
+
+        this.instance.online = false
+        this.instance.qr = null;
     }
 
     setHandler() {
@@ -104,24 +118,14 @@ class WhatsAppInstance {
                     lastDisconnect?.error?.output?.statusCode !==
                     DisconnectReason.loggedOut
                 ) {
-                    this.instance.online = false
-                    this.instance.sock.ws.close()
-                    // remove all events
-                    this.instance.sock.ev.removeAllListeners()
-                    this.instance.qr = null;
-                    this.instance.sock = null;
-                    
-                    await this.init()
+                    this.resetConnection();
+                    logger.info('Error: ' + lastDisconnect?.error)
+                    // await this.init()
                 } else {
                     await this.collection.drop().then((r) => {
                         logger.info('STATE: Droped collection')
                     })
-                    this.instance.online = false
-                    this.instance.sock.ws.close()
-                    // remove all events
-                    this.instance.sock.ev.removeAllListeners()
-                    this.instance.qr = null;
-                    this.instance.sock = null;
+                    this.resetConnection();
                 }
 
                 if (
@@ -171,15 +175,10 @@ class WhatsAppInstance {
                 QRCode.toDataURL(qr).then((url) => {
                     this.instance.qr = url
                     this.instance.qrRetry++
-                    if (this.instance.qrRetry >= config.instance.maxRetryQr) {
-                        // close WebSocket connection
-                        this.instance.sock.ws.close()
-                        // remove all events
-                        this.instance.sock.ev.removeAllListeners()
-                        this.instance.qr = null;
-                        this.instance.sock = null;
-                        logger.info('socket connection terminated')
-                    }
+                    // if (this.instance.qrRetry >= config.instance.maxRetryQr) {
+                    //     this.resetConnection();
+                    //     logger.info('socket connection terminated')
+                    // }
                 })
             }
         })
