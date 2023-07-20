@@ -104,12 +104,24 @@ class WhatsAppInstance {
                     lastDisconnect?.error?.output?.statusCode !==
                     DisconnectReason.loggedOut
                 ) {
+                    this.instance.online = false
+                    this.instance.sock.ws.close()
+                    // remove all events
+                    this.instance.sock.ev.removeAllListeners()
+                    this.instance.qr = null;
+                    this.instance.sock = null;
+                    
                     await this.init()
                 } else {
                     await this.collection.drop().then((r) => {
                         logger.info('STATE: Droped collection')
                     })
                     this.instance.online = false
+                    this.instance.sock.ws.close()
+                    // remove all events
+                    this.instance.sock.ev.removeAllListeners()
+                    this.instance.qr = null;
+                    this.instance.sock = null;
                 }
 
                 if (
