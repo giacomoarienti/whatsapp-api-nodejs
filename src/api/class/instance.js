@@ -42,7 +42,7 @@ class WhatsAppInstance {
     axiosInstance = axios.create({
         baseURL: config.webhookUrl,
     })
-    
+
     updateHook(allowWebhook, webhook) {
         this.instance.customWebhook = this.webhook ? this.webhook : webhook
         this.allowWebhook = config.webhookEnabled
@@ -70,11 +70,12 @@ class WhatsAppInstance {
                 body,
                 instanceKey: key,
             })
-            .catch(() => {})
+            .catch(() => { })
     }
 
     async init() {
-        if(!this.instance.online && this.instance.qrRetry >= config.instance.maxRetryQr) {
+        if (!this.instance.online && !this.instance.sock) {
+            console.log('init')
             this.collection = mongoClient.db('whatsapp-api').collection(this.key)
             const { state, saveCreds } = await useMongoDBAuthState(this.collection)
             this.authState = { state: state, saveCreds: saveCreds }
@@ -163,7 +164,8 @@ class WhatsAppInstance {
                         this.instance.sock.ws.close()
                         // remove all events
                         this.instance.sock.ev.removeAllListeners()
-                        this.instance.qr = ' '
+                        this.instance.qr = null;
+                        this.instance.sock = null;
                         logger.info('socket connection terminated')
                     }
                 })
