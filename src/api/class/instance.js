@@ -318,7 +318,7 @@ class WhatsAppInstance {
                 if (
                     ['all', 'messages', 'messages.upsert'].some((e) =>
                         config.webhookAllowedEvents.includes(e)
-                    ) && !webhookData?.key?.fromMe
+                    )
                 ) {
                     console.log("message", webhookData)
                     await this.SendWebhook('message', webhookData, this.key)
