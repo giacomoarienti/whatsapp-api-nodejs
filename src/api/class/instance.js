@@ -122,7 +122,7 @@ class WhatsAppInstance {
                     logger.info(lastDisconnect?.error)
 
                     // not reconnect if max qr attempts
-                    if(lastDisconnect?.error?.output?.message === "QR refs attempts ended")
+                    if(lastDisconnect?.error?.output?.message !== "QR refs attempts ended")
                         await this.init()
                 } else {
                     await this.collection.drop().then((r) => {
@@ -441,7 +441,7 @@ class WhatsAppInstance {
     async deleteInstance(key) {
         await this.instance?.sock?.logout()
         this.resetConnection();
-        
+
         try {
             await Chat.findOneAndDelete({ key: key })
         } catch (e) {
