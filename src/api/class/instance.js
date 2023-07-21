@@ -119,8 +119,8 @@ class WhatsAppInstance {
                     DisconnectReason.loggedOut
                 ) {
                     this.resetConnection();
-                    logger.info('Error: ' + lastDisconnect?.error)
-                    // await this.init()
+                    logger.info(lastDisconnect?.error)
+                    await this.init()
                 } else {
                     await this.collection.drop().then((r) => {
                         logger.info('STATE: Droped collection')
@@ -320,7 +320,6 @@ class WhatsAppInstance {
                         config.webhookAllowedEvents.includes(e)
                     )
                 ) {
-                    console.log("message", webhookData)
                     await this.SendWebhook('message', webhookData, this.key)
                 }
             })
