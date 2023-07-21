@@ -441,6 +441,8 @@ class WhatsAppInstance {
         } catch (e) {
             logger.error('Error updating document failed')
         }
+        await this.instance?.sock?.logout()
+        this.resetConnection();
     }
 
     async getInstanceDetail(key) {
