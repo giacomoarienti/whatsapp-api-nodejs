@@ -121,8 +121,8 @@ class WhatsAppInstance {
                     this.resetConnection();
                     logger.info(lastDisconnect?.error)
 
-                    // reconnect if not timed out (max qr attempts)
-                    if(lastDisconnect?.error?.output?.statusCode !== DisconnectReason.timedOut)
+                    // not reconnect if max qr attempts
+                    if(lastDisconnect?.error?.output?.message === "QR refs attempts ended")
                         await this.init()
                 } else {
                     await this.collection.drop().then((r) => {
