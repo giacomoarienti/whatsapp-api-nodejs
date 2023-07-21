@@ -439,13 +439,14 @@ class WhatsAppInstance {
     }
 
     async deleteInstance(key) {
+        await this.instance?.sock?.logout()
+        this.resetConnection();
+        
         try {
             await Chat.findOneAndDelete({ key: key })
         } catch (e) {
             logger.error('Error updating document failed')
         }
-        await this.instance?.sock?.logout()
-        this.resetConnection();
     }
 
     async getInstanceDetail(key) {
