@@ -120,7 +120,10 @@ class WhatsAppInstance {
                 ) {
                     this.resetConnection();
                     logger.info(lastDisconnect?.error)
-                    await this.init()
+
+                    // reconnect if not timed out (max qr attempts)
+                    if(lastDisconnect?.error?.output?.statusCode !== DisconnectReason.timedOut)
+                        await this.init()
                 } else {
                     await this.collection.drop().then((r) => {
                         logger.info('STATE: Droped collection')
